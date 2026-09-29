@@ -40,13 +40,14 @@ transform = transforms.Compose([
 
 # Define dataset and dataloader
 train_dataset = Dataset(annotations_file= FLAGS.train_file, img_dir= FLAGS.img_dir, transform=transform)
-train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 valid_dataset = Dataset(annotations_file= FLAGS.valid_file, img_dir= FLAGS.img_dir, transform=transform)
-valid_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
 
 # Report split sizes
 print('Training set has {} instances.'.format(len(train_dataset))) # Print the number of instances in the training dataset
+print('Validation set has {} instances.'.format(len(valid_dataset))) # Print the number of instances in the validation dataset
 
 # Initialize our model and move to device
 model = MyModel(num_classes=2).to(device)
