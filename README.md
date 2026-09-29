@@ -1,6 +1,6 @@
 # Histopathology Cancer Detection with ResNet-18 & Grad-CAM
 
-Deep learning pipeline for detecting **breast cancer metastasis in lymph node histopathology images** using PyTorch and ResNet-18, with quantitative evaluation and Grad-CAM explainability.
+Deep learning pipeline for detecting **breast cancer metastasis in lymph node histopathology images** using **transfer learning with an ImageNet-pretrained ResNet-18**, with quantitative evaluation and Grad-CAM explainability.
 
 The project covers the complete workflow from image preprocessing and model training to validation, test inference, quantitative evaluation, and visual interpretation of model predictions.
 
@@ -159,9 +159,11 @@ python scripts/calculate_rgb_stats.py
 
 ## Model Architecture
 
-The classifier is based on **ResNet-18**.
+The classifier is based on **ResNet-18** and uses a transfer learning approach.
 
-The convolutional ResNet backbone extracts image features, followed by a custom classification head for binary prediction.
+The network is initialized with **ImageNet-pretrained weights**, the original ImageNet classification layer is removed, and a custom binary classification head is added for breast cancer metastasis detection.
+
+During training, the ResNet-18 backbone is **fine-tuned end-to-end** together with the custom classification head rather than being kept frozen.
 
 Conceptually:
 
@@ -172,13 +174,19 @@ Histopathology Image
  Resize + Normalize
         │
         ▼
-     ResNet-18
+ImageNet-pretrained ResNet-18
         │
         ▼
- Feature Representation
+ End-to-End Fine-Tuning
         │
         ▼
- Classification Head
+ 512-d Feature Vector
+        │
+        ▼
+ Linear (512 → 128) + ReLU
+        │
+        ▼
+   Linear (128 → 2)
         │
         ▼
 Cancer / Non-cancer
