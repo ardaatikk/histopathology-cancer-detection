@@ -10,7 +10,7 @@ from model import MyModel
 from dataset_inference import Dataset
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--img_dir', default='./images/images', help='Images directory')
+parser.add_argument('--img_dir', default='./images', help='Images directory')
 parser.add_argument('--test_file', default='./test.csv', help='Test File')
 parser.add_argument('--batch_size', default=16, help='Batch size')
 parser.add_argument('--model_file', default='./weights_epoch_100.pt', help='Batch size')

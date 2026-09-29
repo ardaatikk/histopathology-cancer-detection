@@ -10,9 +10,9 @@ from model import MyModel
 from dataset import Dataset
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--img_dir', default='./images/images', help='Images directory')
-parser.add_argument('--train_file', default='./myTrain.csv', help='Train File')
-parser.add_argument('--valid_file', default='./myValid.csv', help='Validation file')
+parser.add_argument('--img_dir', default='./images', help='Images directory')
+parser.add_argument('--train_file', default='./data/train.csv', help='Training annotations file')
+parser.add_argument('--valid_file', default='./data/validation.csv', help='Validation annotations file')
 parser.add_argument('--learning_rate', default=0.001, help='Learning rate')
 parser.add_argument('--batch_size', default=16, help='Batch size')
 parser.add_argument('--num_epochs', default=20, help='Number of epochs')

@@ -25,3 +25,6 @@ env/
 
 # Generated inference outputs
 test_log__*.csv
+
+# Training logs
+log__*.txt

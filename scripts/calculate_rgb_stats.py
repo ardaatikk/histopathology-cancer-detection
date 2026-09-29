@@ -5,7 +5,7 @@ import os
 from PIL import Image
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--image_folder', default='../images/images', help='Images directory')
+parser.add_argument('--image_folder', default='../images', help='Images directory')
 
 FLAGS = parser.parse_args()
 
