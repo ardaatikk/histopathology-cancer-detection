@@ -28,3 +28,6 @@ test_log__*.csv
 
 # Training logs
 log__*.txt
+
+# Generated outputs
+outputs/

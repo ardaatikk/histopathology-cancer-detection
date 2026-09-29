@@ -6,7 +6,7 @@ import datetime
 import argparse
 
 from torch.utils.data import DataLoader
-from model import MyModel
+from model import CancerDetectionModel
 from dataset import Dataset
 
 parser = argparse.ArgumentParser(description='')
@@ -50,7 +50,7 @@ print('Training set has {} instances.'.format(len(train_dataset))) # Print the n
 print('Validation set has {} instances.'.format(len(valid_dataset))) # Print the number of instances in the validation dataset
 
 # Initialize our model and move to device
-model = MyModel(num_classes=2).to(device)
+model = CancerDetectionModel(num_classes=2).to(device)
 
 # Define loss function and optimizer
 loss_fn = nn.CrossEntropyLoss() # Define the cross-entropy loss function for multi-class classification

@@ -5,15 +5,42 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import argparse
 import datetime
+from pathlib import Path
 
-from model import MyModel
+from model import CancerDetectionModel
 from dataset_inference import Dataset
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--img_dir', default='./images', help='Images directory')
-parser.add_argument('--test_file', default='./test.csv', help='Test File')
-parser.add_argument('--batch_size', default=16, help='Batch size')
-parser.add_argument('--model_file', default='./weights_epoch_100.pt', help='Batch size')
+parser.add_argument(
+    '--img_dir',
+    default='./images',
+    help='Images directory'
+)
+
+parser.add_argument(
+    '--test_file',
+    default='./data/test.csv',
+    help='Test annotations file'
+)
+
+parser.add_argument(
+    '--batch_size',
+    type=int,
+    default=16,
+    help='Batch size'
+)
+
+parser.add_argument(
+    '--model_file',
+    default='./checkpoints/weights_epoch_100.pt',
+    help='Model checkpoint'
+)
+
+parser.add_argument(
+    '--output_dir',
+    default='./outputs',
+    help='Directory for prediction outputs'
+)
 
 FLAGS = parser.parse_args()
 
@@ -34,7 +61,7 @@ test_dataset = Dataset(annotations_file= FLAGS.test_file, img_dir= FLAGS.img_dir
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize the model and load the saved weights
-model = MyModel(num_classes=2).to(device)
+model = CancerDetectionModel(num_classes=2).to(device)
 model.load_state_dict(torch.load(FLAGS.model_file,  map_location=torch.device('cpu')))  
 
 # Initialize lists to store the test results
@@ -43,7 +70,10 @@ test_results = []
 # Create log file with timestamp
 # /Users/ardaatik/Desktop/my_projects/classification/weights__20230802_133002_epoch_100.pt
 model_id = FLAGS.model_file.split('__')[-1][:-3]
-log_file_name = f"test_log__{model_id}.csv" 
+model_name = Path(FLAGS.model_file).stem
+output_dir = Path(FLAGS.output_dir)
+output_dir.mkdir(parents=True, exist_ok=True)
+log_file_name = output_dir / f"predictions__{model_name}.csv"
 log_file = open(log_file_name, "w") 
 # write the header
 log_file.write("img_id,cancer_score\n")
