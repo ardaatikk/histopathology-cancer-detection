@@ -40,6 +40,18 @@ parser.add_argument(
     help="Directory for Grad-CAM visualizations",
 )
 
+parser.add_argument(
+    "--image",
+    default=None,
+    help="Optional path to a single image for Grad-CAM analysis",
+)
+
+parser.add_argument(
+    "--single_output_dir",
+    default="./outputs/gradcam",
+    help="Directory for single-image Grad-CAM outputs",
+)
+
 FLAGS = parser.parse_args()
 
 
@@ -243,6 +255,102 @@ gradcam = GradCAM(
     target_layer,
 )
 
+def analyze_single_image(image_path):
+    image_path = Path(image_path)
+
+    if not image_path.exists():
+        raise FileNotFoundError(
+            f"Image not found: {image_path}"
+        )
+
+    original_image, tensor = prepare_image(image_path)
+
+    prediction, probability = predict(
+        model,
+        tensor,
+    )
+
+    cam = gradcam.generate(
+        tensor,
+        prediction,
+    )
+
+    original = (
+        np.asarray(original_image)
+        .astype(np.float32)
+        / 255.0
+    )
+
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(12, 4),
+    )
+
+    axes[0].imshow(original)
+    axes[0].set_title("Original")
+
+    axes[1].imshow(
+        cam,
+        cmap="jet",
+    )
+    axes[1].set_title("Grad-CAM")
+
+    axes[2].imshow(original)
+    axes[2].imshow(
+        cam,
+        cmap="jet",
+        alpha=0.45,
+    )
+    axes[2].set_title("Overlay")
+
+    for axis in axes:
+        axis.axis("off")
+
+    class_name = (
+        "Cancer"
+        if prediction == 1
+        else "Non-cancer"
+    )
+
+    fig.suptitle(
+        f"Prediction: {class_name} | "
+        f"Cancer probability: {probability:.3f}"
+    )
+
+    plt.tight_layout()
+
+    single_output_dir = Path(FLAGS.single_output_dir)
+    single_output_dir.mkdir(parents=True, exist_ok=True)
+
+    output_path = (
+        single_output_dir
+        / f"gradcam_{image_path.stem}.png"
+    )
+
+    plt.savefig(
+        output_path,
+        dpi=300,
+        bbox_inches="tight",
+    )
+
+    plt.close()
+
+    print(f"Image: {image_path}")
+    print(f"Prediction: {class_name}")
+    print(
+        f"Cancer probability: "
+        f"{probability:.4f}"
+    )
+    print(
+        f"Grad-CAM saved to: "
+        f"{output_path}"
+    )
+
+if FLAGS.image is not None:
+    analyze_single_image(FLAGS.image)
+    gradcam.close()
+    raise SystemExit(0)
 
 validation_df = pd.read_csv(
     FLAGS.validation_file

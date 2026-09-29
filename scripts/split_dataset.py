@@ -1,41 +1,72 @@
-import csv
-import random
 import argparse
+from pathlib import Path
 
-parser = argparse.ArgumentParser(description='')
-parser.add_argument('--data_file', default='../myTrain.csv', help='Data file')
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
-FLAGS = parser.parse_args()
 
-# Read the input CSV file
-input_file = FLAGS.data_file
-output_file_1 = 'myTrain.csv'
-output_file_2 = 'myValid.csv'
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Split a labeled dataset into training and validation CSV files."
+    )
+    parser.add_argument(
+        "--data_file",
+        required=True,
+        help="Input labeled CSV file.",
+    )
+    parser.add_argument(
+        "--output_dir",
+        default="./data",
+        help="Directory for train and validation CSV files.",
+    )
+    parser.add_argument(
+        "--validation_size",
+        type=float,
+        default=0.25,
+        help="Fraction of samples assigned to validation.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed.",
+    )
 
-with open(input_file, 'r') as csv_file:  # r means we opened this file in read mode.
-    csv_reader = csv.reader(csv_file)  
-    header = next(csv_reader)  # Assuming the first row is the header
-    
-    rows = list(csv_reader)  # Convert the reader object to a list for random shuffling
-    random.shuffle(rows)  # Shuffle the rows randomly
+    return parser.parse_args()
 
-    # Calculate the number of rows for each output file
-    total_rows = len(rows)
-    rows_output_1 = total_rows * 3 // 4  # 3/4 of the total rows
-    rows_output_2 = total_rows - rows_output_1  # Remaining 1/4 of the total rows
 
-    # Write rows to output file 1
-    with open(output_file_1, 'w', newline='') as csv_output_file_1:
-        csv_writer_1 = csv.writer(csv_output_file_1)
-        csv_writer_1.writerow(header)  # Write the header row to output file 1
-        for i in range(rows_output_1):
-            csv_writer_1.writerow(rows[i])  # Write the first 3/4 of the shuffled rows to output file 1
+def main():
+    args = parse_args()
 
-    # Write rows to output file 2
-    with open(output_file_2, 'w', newline='') as csv_output_file_2:
-        csv_writer_2 = csv.writer(csv_output_file_2)
-        csv_writer_2.writerow(header)  # Write the header row to output file 2
-        for i in range(rows_output_1, total_rows):
-            csv_writer_2.writerow(rows[i])  # Write the remaining 1/4 of the shuffled rows to output file 2
+    data = pd.read_csv(args.data_file)
 
-print(f'Successfully divided {input_file} into {output_file_1} and {output_file_2}.')
+    if "label" not in data.columns:
+        raise ValueError(
+            "Input CSV must contain a 'label' column."
+        )
+
+    train_data, validation_data = train_test_split(
+        data,
+        test_size=args.validation_size,
+        random_state=args.seed,
+        shuffle=True,
+        stratify=data["label"],
+    )
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    train_path = output_dir / "train.csv"
+    validation_path = output_dir / "validation.csv"
+
+    train_data.to_csv(train_path, index=False)
+    validation_data.to_csv(validation_path, index=False)
+
+    print(f"Training samples: {len(train_data)}")
+    print(f"Validation samples: {len(validation_data)}")
+    print(f"Training CSV saved to: {train_path}")
+    print(f"Validation CSV saved to: {validation_path}")
+
+
+if __name__ == "__main__":
+    main()
