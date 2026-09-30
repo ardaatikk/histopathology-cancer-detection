@@ -31,3 +31,5 @@ log__*.txt
 
 # Generated outputs
 outputs/
+# Testing
+.pytest_cache/

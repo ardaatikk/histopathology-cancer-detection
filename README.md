@@ -1,5 +1,9 @@
 # Histopathology Cancer Detection with ResNet-18 & Grad-CAM
 
+[![Tests](https://github.com/ardaatikk/histopathology-cancer-detection/actions/workflows/tests.yml/badge.svg)](https://github.com/ardaatikk/histopathology-cancer-detection/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Deep learning pipeline for detecting **breast cancer metastasis in lymph node histopathology images** using **transfer learning with an ImageNet-pretrained ResNet-18**, with quantitative evaluation and Grad-CAM explainability.
 
 The project covers the complete workflow from image preprocessing and model training to validation, test inference, quantitative evaluation, and visual interpretation of model predictions.
@@ -203,6 +207,10 @@ For inference, softmax probabilities are calculated and the probability associat
 ```text
 histopathology-cancer-detection/
 │
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
 ├── assets/
 │   ├── confusion_matrix.png
 │   ├── metrics.txt
@@ -237,9 +245,17 @@ histopathology-cancer-detection/
 │   ├── model.py
 │   └── train.py
 │
+├── tests/
+│   ├── test_dataset.py
+│   ├── test_inference.py
+│   ├── test_model.py
+│   ├── test_gradcam.py
+│
 ├── .gitignore
+├── LICENSE
+├── README.md
 ├── requirements.txt
-└── README.md
+└── requirements-dev.txt
 ```
 
 Generated predictions, training logs, plots and single-image Grad-CAM outputs are stored under `outputs/` and excluded from version control.
@@ -440,6 +456,30 @@ This project has several important limitations:
 - Reported metrics should therefore be interpreted as experimental machine-learning results rather than diagnostic performance.
 
 ---
+
+## Testing
+
+The repository includes automated tests covering the core data, model, inference, and Grad-CAM functionality.
+
+The current test suite contains **16 tests** covering:
+
+- training and inference dataset behavior
+- preprocessing transforms
+- ResNet-18 model construction
+- classifier output dimensions
+- model forward passes
+- checkpoint loading
+- inference CSV generation
+- preservation of image identifiers
+- Grad-CAM heatmap generation
+- Grad-CAM normalization
+- Grad-CAM activation and gradient hooks
+
+Run the complete test suite with:
+
+```bash
+python -m pytest -v
+```
 
 ## Reproducibility
 
