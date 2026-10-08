@@ -1,0 +1,14 @@
+{
+    "image_count": 1120,
+    "train_csv": "/Users/ardaatik/Desktop/my_projects/cancer_diagnosis/data/folds/fold_4_train.csv",
+    "rgb_mean": [
+        0.6258316209402391,
+        0.43210201776333007,
+        0.6491169507562592
+    ],
+    "rgb_std": [
+        0.21530261533320474,
+        0.22287562478853334,
+        0.19656627780649
+    ]
+}
