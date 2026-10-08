@@ -30,8 +30,15 @@ def create_checkpoint(path):
         pretrained=False,
     )
 
+    checkpoint = {
+        "model_state_dict": model.state_dict(),
+        "epoch": 1,
+        "rgb_mean": (0.61495719, 0.42157306, 0.64444248),
+        "rgb_std": (0.21410407, 0.22494683, 0.18994613),
+    }
+
     torch.save(
-        model.state_dict(),
+        checkpoint,
         path,
     )
 
@@ -50,13 +57,14 @@ def test_checkpoint_can_be_loaded(tmp_path):
         pretrained=False,
     )
 
-    state_dict = torch.load(
+    checkpoint = torch.load(
         checkpoint_path,
         map_location="cpu",
+        weights_only=True,
     )
 
     model.load_state_dict(
-        state_dict
+        checkpoint["model_state_dict"]
     )
 
     assert isinstance(
