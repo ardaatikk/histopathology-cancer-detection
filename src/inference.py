@@ -4,10 +4,11 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from torchvision import transforms
 
 from dataset_inference import InferenceDataset
 from model import CancerDetectionModel
+
+from preprocessing import get_preprocessing_transform
 
 
 def parse_args():
@@ -53,15 +54,7 @@ def main():
     )
     print(f"Using device: {device}")
 
-    transform = transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.Normalize(
-                (0.62376275, 0.43274997, 0.64434578),
-                (0.2201862, 0.23024299, 0.19410873),
-            ),
-        ]
-    )
+    transform = get_preprocessing_transform()
 
     test_dataset = InferenceDataset(
         annotations_file=args.test_file,
@@ -82,12 +75,13 @@ def main():
         pretrained=False,
     ).to(device)
 
-    model.load_state_dict(
-        torch.load(
-            args.model_file,
-            map_location=device,
-        )
+    checkpoint = torch.load(
+        args.model_file,
+        map_location=device,
+        weights_only=True,
     )
+
+    model.load_state_dict(checkpoint["model_state_dict"])
 
     model.eval()
 

@@ -33,3 +33,6 @@ log__*.txt
 outputs/
 # Testing
 .pytest_cache/
+
+# Histopathology image dataset
+images/

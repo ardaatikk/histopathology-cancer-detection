@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 import torch
-from torchvision.io import read_image
-
+import numpy as np
+from PIL import Image
 
 class InferenceDataset(torch.utils.data.Dataset):
     """Dataset for unlabeled histopathology images."""
@@ -20,7 +20,20 @@ class InferenceDataset(torch.utils.data.Dataset):
         image_id = str(self.image_ids.iloc[idx, 0])
         image_path = self.img_dir / f"{image_id}.jpeg"
 
-        image = read_image(str(image_path)).float() / 255.0
+        with Image.open(image_path) as img:
+            image_array = np.array(
+                img.convert("RGB"),
+                dtype=np.uint8,
+                copy=True,
+            )
+
+        image = (
+            torch.from_numpy(image_array)
+            .permute(2, 0, 1)
+            .contiguous()
+            .float()
+            / 255.0
+        )
 
         if self.transform:
             image = self.transform(image)

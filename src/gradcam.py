@@ -7,26 +7,10 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from torchvision import transforms
+from torchvision.transforms import functional as TF
 
 from model import CancerDetectionModel
-
-
-# ============================================================
-# Configuration
-# ============================================================
-
-MEAN = (
-    0.62376275,
-    0.43274997,
-    0.64434578,
-)
-
-STD = (
-    0.2201862,
-    0.23024299,
-    0.19410873,
-)
+from preprocessing import IMAGE_SIZE, get_preprocessing_transform
 
 
 # ============================================================
@@ -55,8 +39,8 @@ def parse_args():
 
     parser.add_argument(
         "--model_file",
-        default="./checkpoints/weights_epoch_100.pt",
-        help="Model checkpoint",
+        required=True,
+        help="Path to the model checkpoint.",
     )
 
     parser.add_argument(
@@ -91,18 +75,7 @@ def parse_args():
 # ============================================================
 
 def build_transform():
-    return transforms.Compose(
-        [
-            transforms.Resize(
-                (224, 224)
-            ),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                MEAN,
-                STD,
-            ),
-        ]
-    )
+    return get_preprocessing_transform()
 
 
 # ============================================================
@@ -237,14 +210,13 @@ def load_model(
         device
     )
 
-    state_dict = torch.load(
+    checkpoint = torch.load(
         model_file,
         map_location=device,
+        weights_only=True,
     )
 
-    model.load_state_dict(
-        state_dict
-    )
+    model.load_state_dict(checkpoint["model_state_dict"])
 
     model.eval()
 
@@ -285,26 +257,21 @@ def prepare_image(
     transform,
     device,
 ):
-    image = Image.open(
-        image_path
-    ).convert(
-        "RGB"
-    )
+    image = Image.open(image_path).convert("RGB")
 
-    display_image = image.resize(
-        (224, 224)
-    )
+    image_tensor = TF.to_tensor(image)
 
     tensor = (
-        transform(image)
+        transform(image_tensor)
         .unsqueeze(0)
         .to(device)
     )
 
-    return (
-        display_image,
-        tensor,
+    display_image = TF.to_pil_image(
+        TF.resize(image_tensor, IMAGE_SIZE)
     )
+
+    return display_image, tensor
 
 
 # ============================================================
