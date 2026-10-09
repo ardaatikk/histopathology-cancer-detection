@@ -116,7 +116,7 @@ These baseline results were obtained under a different evaluation protocol and a
   <img src="assets/roc_curve.png" width="600" alt="ROC Curve">
 </p>
 
-The ROC-AUC of **0.9663** indicates strong class-separation performance on the held-out validation data.
+The ROC-AUC of **0.9663** corresponds to the earlier single-checkpoint validation experiment. The primary results of the updated project are based on slide-independent 5-fold cross-validation, reported in the Model Performance section.
 
 ---
 
@@ -169,6 +169,66 @@ The project also supports Grad-CAM visualization for four prediction categories:
 | ![False Positive](assets/gradcam/false_positive.png) | ![False Negative](assets/gradcam/false_negative.png) |
 
 Examining both correct and incorrect predictions provides additional insight into potential model failure patterns.
+
+### Integrated Gradients and XAI Comparison
+
+In addition to Grad-CAM, the project implements Integrated Gradients (IG) using Captum.
+
+Integrated Gradients estimates input-feature contributions to each class logit relative to a reference baseline.
+
+A comparison pipeline evaluates Grad-CAM and Integrated Gradients on representative examples from four prediction categories:
+
+- True Positive (TP)
+- True Negative (TN)
+- False Positive (FP)
+- False Negative (FN)
+
+Each image is analyzed using the checkpoint from its corresponding cross-validation fold.
+
+Run the comparison:
+
+```bash
+python -m scripts.compare_xai --n_steps 128
+```
+
+The script generates six-panel visualizations containing:
+
+1. Original image
+2. Class 0 Grad-CAM
+3. Class 1 Grad-CAM
+4. Class 0 Integrated Gradients
+5. Class 1 Integrated Gradients
+6. Predicted-class Grad-CAM overlay
+
+Results are saved under:
+
+```text
+outputs/xai_comparison/
+├── TP/
+├── TN/
+├── FP/
+└── FN/
+```
+
+To analyze all false positive and false negative examples:
+
+```bash
+python -m scripts.compare_xai --all_errors --n_steps 128
+```
+
+Grad-CAM and Integrated Gradients provide complementary attribution perspectives. Their visualizations should not be interpreted as equivalent measurements or as evidence of clinical validity.
+
+#### XAI Comparison Examples
+
+The following visualizations compare Grad-CAM and Integrated Gradients across different prediction outcomes.
+
+| True Positive | True Negative |
+|---|---|
+| ![TP XAI](assets/xai_comparison/xai_slide_ZHW1__img_54SW.png) | ![TN XAI](assets/xai_comparison/xai_slide_8IXU__img_LRXP.png) |
+
+| False Positive | False Negative |
+|---|---|
+| ![FP XAI](assets/xai_comparison/xai_slide_M9QC__img_OMD0.png) | ![FN XAI](assets/xai_comparison/xai_slide_Z7EQ__img_Q75L.png) |
 
 ### Interpretation Limitations
 
@@ -656,6 +716,38 @@ The cross-validation summary is available at:
 ```text
 outputs/evaluation/cv_v1_normalized/cv_summary.txt
 ```
+
+### Cross-Validation Error Analysis
+
+Out-of-fold (OOF) predictions are analyzed to investigate model errors across validation folds and source slides.
+
+Run the analysis:
+
+```bash
+python scripts/analyze_errors.py
+```
+
+The analysis covers 1,399 labeled images:
+
+| Prediction Category | Count |
+|---|---:|
+| True Positive (TP) | 794 |
+| True Negative (TN) | 529 |
+| False Positive (FP) | 32 |
+| False Negative (FN) | 44 |
+| **Total** | **1,399** |
+
+Overall, the model correctly classified 1,323 images (94.57%) and misclassified 76 images (5.43%).
+
+The script generates:
+
+- `oof_predictions.csv` — Combined out-of-fold predictions.
+- `slide_error_analysis.csv` — Error counts and rates grouped by source slide.
+- `high_confidence_errors.csv` — Incorrect predictions ranked by predicted-class confidence.
+
+All files are saved under `outputs/evaluation/cv_v1_normalized/`.
+
+The analysis helps identify error concentration across slides and examples where the model makes incorrect predictions with high confidence.
 
 ### Evaluation Protocol
 
