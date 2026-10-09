@@ -9,8 +9,25 @@ import torch.nn.functional as F
 from PIL import Image
 from torchvision.transforms import functional as TF
 
-from model import CancerDetectionModel
-from preprocessing import IMAGE_SIZE, get_preprocessing_transform
+try:
+    from src.model import CancerDetectionModel
+    from src.preprocessing import (
+        IMAGE_SIZE,
+        get_preprocessing_transform,
+    )
+except ModuleNotFoundError as exc:
+    if exc.name not in {
+        "src",
+        "src.model",
+        "src.preprocessing",
+    }:
+        raise
+
+    from model import CancerDetectionModel
+    from preprocessing import (
+        IMAGE_SIZE,
+        get_preprocessing_transform,
+    )
 
 
 # ============================================================

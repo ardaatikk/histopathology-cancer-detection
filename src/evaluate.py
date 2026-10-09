@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -186,6 +186,67 @@ def main():
     all_labels = np.asarray(all_labels)
     all_predictions = np.asarray(all_predictions)
     all_probabilities = np.asarray(all_probabilities)
+    
+    # --------------------------------------------------
+    # Save image-level predictions
+    # --------------------------------------------------
+
+    annotations = pd.read_csv(args.validation_file)
+
+    if len(annotations) != len(all_labels):
+        raise ValueError(
+            "Number of predictions does not match validation annotations."
+        )
+
+    if not np.array_equal(
+        annotations["label"].to_numpy(),
+        all_labels,
+    ):
+        raise ValueError(
+            "Prediction order does not match validation annotations."
+        )
+
+    predictions_df = pd.DataFrame({
+        "img_id": annotations["img_id"].to_numpy(),
+        "slide_id": (
+            annotations["img_id"]
+            .str.split("__img_", n=1)
+            .str[0]
+            .to_numpy()
+        ),
+        "true_label": all_labels,
+        "predicted_label": all_predictions,
+        "cancer_probability": all_probabilities,
+    })
+
+    conditions = [
+        (predictions_df["true_label"] == 1)
+        & (predictions_df["predicted_label"] == 1),
+
+        (predictions_df["true_label"] == 0)
+        & (predictions_df["predicted_label"] == 0),
+
+        (predictions_df["true_label"] == 0)
+        & (predictions_df["predicted_label"] == 1),
+
+        (predictions_df["true_label"] == 1)
+        & (predictions_df["predicted_label"] == 0),
+    ]
+
+    predictions_df["error_type"] = np.select(
+        conditions,
+        ["TP", "TN", "FP", "FN"],
+        default="UNKNOWN",
+    )
+
+    predictions_path = output_dir / "predictions.csv"
+
+    predictions_df.to_csv(
+        predictions_path,
+        index=False,
+    )
+
+    print(f"Saved image-level predictions to: {predictions_path}")
 
     # --------------------------------------------------
     # Confusion matrix
